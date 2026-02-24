@@ -7,7 +7,7 @@ export const createTarea = async (nuevaTarea) => {
         },
     };
 
-    const respuesta = await fetch('https://jsonplaceholder.typicode.com/todos', opciones);
+    const respuesta = await fetch('http://localhost:3000/tareas', opciones);
     if (respuesta.ok) {
         return await respuesta.json();
     } else {
