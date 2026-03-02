@@ -3,7 +3,7 @@
  * Objetivo: Controlar la lógica de la aplicación, manejar eventos y conectar con la API.
  */
 import { armarUsuario, armarTareas } from "./components/index.js";
-import { getUserById, getTareasByUserId, createTarea } from "./use-case/index.js";
+import { getUserById, getTareasByUserId, createTarea } from "./api/index.js";
 
 // ==========================================
 // REFERENCIAS AL DOM (HTML)
