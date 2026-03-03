@@ -1,5 +1,5 @@
 import { getTareasByUserId, createTarea, deleteTarea, updateTarea } from "../api/index.js";
-import { armarTareas } from "../ui/index.js";
+import { armarTareas, notificarExito, notificarError, mostrarConfirmacion } from "../ui/index.js";
 import { guardarTareas, agregarTarea, actualizarTareaEnEstado, eliminarTareaDelEstado, obtenerTareasFiltradas } from "./filterService.js";
 
 /**
@@ -37,10 +37,11 @@ export const procesarCreacionTarea = async (nuevaTarea, contenedorTareas, formul
         } else {
             armarTareas(contenedorTareas, [tareaCreada]);
         }
+        notificarExito("Tarea creada correctamente");
         return true;
     } catch (error) {
         console.error("Error al crear tarea:", error);
-        alert("Hubo un error al guardar la tarea");
+        notificarError("Hubo un error al guardar la tarea");
         return false;
     }
 };
@@ -60,10 +61,11 @@ export const procesarActualizacionTarea = async (tareaActualId, datosActualizado
         if (helpers.renderFn) {
             helpers.renderFn();
         }
+        notificarExito("Tarea actualizada correctamente");
         return true;
     } catch (error) {
         console.error("Error actualizando tarea:", error);
-        alert("Hubo un error al actualizar la tarea");
+        notificarError("Hubo un error al actualizar la tarea");
         return false;
     }
 };
@@ -72,7 +74,7 @@ export const procesarActualizacionTarea = async (tareaActualId, datosActualizado
  * Servicio para eliminar una tarea.
  */
 export const procesarEliminacionTarea = async (idTarea, tarjetaDOM, renderFn) => {
-    const confirmar = confirm("¿Estás segura de que deseas eliminar esta tarea?");
+    const confirmar = await mostrarConfirmacion("¿Deseas eliminar esta tarea? Esta acción no se puede deshacer.");
     if (!confirmar) return;
 
     try {
@@ -80,14 +82,15 @@ export const procesarEliminacionTarea = async (idTarea, tarjetaDOM, renderFn) =>
         if (eliminado) {
             eliminarTareaDelEstado(idTarea); // eliminar de filterService
             tarjetaDOM.remove();
+            notificarExito("Tarea eliminada correctamente");
             if (renderFn) {
                 renderFn();                  // re-renderizar badge de conteo
             }
         } else {
-            alert("No se pudo eliminar la tarea");
+            notificarError("No se pudo eliminar la tarea");
         }
     } catch (error) {
         console.error("Error eliminando tarea:", error);
-        alert("Ocurrió un error al eliminar la tarea");
+        notificarError("Ocurrió un error al eliminar la tarea");
     }
 };

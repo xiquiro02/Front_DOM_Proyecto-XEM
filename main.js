@@ -3,7 +3,7 @@
  * Objetivo: Controlar la lógica de la aplicación, manejar eventos y conectar con la API y Servicios.
  */
 import { buscarYMostrarUsuario, procesarCreacionTarea, procesarActualizacionTarea, procesarEliminacionTarea } from "./services/index.js";
-import { armarFiltros, armarTareas } from "./ui/index.js";
+import { armarFiltros, armarTareas, notificarError, notificarInfo } from "./ui/index.js";
 import { setFiltroEstado, setFiltroUsuario, getFiltroEstado, getFiltroUsuario, obtenerTareasFiltradas, resetearFiltros, setCriterioOrden, setDireccionOrden, getCriterioOrden, getDireccionOrden, resetearOrden } from "./services/index.js";
 
 // ==========================================
@@ -206,7 +206,7 @@ formularioTarea.addEventListener("submit", async (evento) => {
     }
 
     if (titulo === "") {
-        alert("El título es obligatorio");
+        notificarInfo("El título es obligatorio");
         return;
     }
 
@@ -356,6 +356,7 @@ function resetearFormularioAModoCrear() {
 
 function mostrarError(mensaje) {
     errorIdUsuario.textContent = mensaje;
+    notificarError(mensaje);
     ocultarSecciones();
 }
 
