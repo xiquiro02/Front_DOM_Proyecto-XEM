@@ -71,6 +71,33 @@
     font-size: var(--font-size-lg);
 }
 
+.tarea__acciones {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    margin-bottom: 10px; 
+}
+
+.btn-editar-tarea {
+    background-color: var(--color-boton-editar);
+    color: var(--color-text-botones);
+}
+
+.btn-editar-tarea:hover {
+    background-color: var(--color-boton-editar-hover);
+    transform: scale(1.05);
+}
+
+.btn-eliminar-tarea {
+    background-color: var(--color-boton-eliminar);
+    color: var(--color-text-botones);
+}
+
+.btn-eliminar-tarea:hover {
+    background-color: var(--color-boton-eliminar-hover);
+    transform: scale(1.05);
+}
+
 @media (max-width: 480px) {
     .btn {
         width: 100%;
