@@ -1,5 +1,5 @@
 export const getTareasByUserId = async (idUsuario) => {
-    const respuesta = await fetch(`http://localhost:3000/tareas?userId=${idUsuario}`);
+    const respuesta = await fetch(`https://jsonplaceholder.typicode.com/todos?userId=${idUsuario}`);
     if (respuesta.ok) {
         const listaDeTareas = await respuesta.json();
         return listaDeTareas;
