@@ -8,7 +8,9 @@ import {
     procesarCreacionUsuario,
     procesarActualizacionUsuario,
     procesarEliminacionUsuario,
-    obtenerTodosLosUsuarios
+    obtenerTodosLosUsuarios,
+    asignarTareaAVariosUsuarios,
+    guardarUsuarios
 } from '../../services/index.js';
 import { armarListaUsuarios, notificarError, notificarInfo } from '../../ui/index.js';
 
@@ -20,7 +22,6 @@ const inputNombre = document.getElementById('userName');
 const inputUsername = document.getElementById('userUsername');
 const inputEmail = document.getElementById('userEmail');
 const inputPhone = document.getElementById('userPhone');
-const inputWebsite = document.getElementById('userWebsite');
 const btnSubmit = document.getElementById('submitUserBtn');
 const btnCancelar = document.getElementById('cancelEditBtn');
 const formTitulo = document.getElementById('formTitle');
@@ -28,6 +29,10 @@ const contenedorUsuarios = document.getElementById('usersContainer');
 const inputBusqueda = document.getElementById('searchUser');
 const btnCargar = document.getElementById('loadUsersBtn');
 const totalBadge = document.getElementById('totalBadge');
+const userNameError = document.getElementById('userNameError');
+const userUsernameError = document.getElementById('userUsernameError');
+const userEmailError = document.getElementById('userEmailError');
+const userPhoneError = document.getElementById('userPhoneError');
 
 // ==========================================
 // ESTADO LOCAL
@@ -42,6 +47,18 @@ function renderUsuarios(lista) {
     const usuarios = lista ?? obtenerTodosLosUsuarios();
     armarListaUsuarios(contenedorUsuarios, usuarios);
     actualizarTotal(usuarios.length);
+
+    // Si es una búsqueda sin resultados y hay término de búsqueda, mostrar mensaje específico
+    const terminoBusqueda = inputBusqueda.value.trim();
+    if (usuarios.length === 0 && terminoBusqueda !== '') {
+        contenedorUsuarios.innerHTML = `
+            <div class="filter-no-results">
+                <div class="filter-no-results__icon">🔍</div>
+                <p class="filter-no-results__text">No se encontraron usuarios</p>
+                <p class="filter-no-results__sub">No hay resultados para "${terminoBusqueda}"</p>
+            </div>
+        `;
+    }
 }
 
 function actualizarTotal(cantidad) {
@@ -57,17 +74,58 @@ btnCargar.addEventListener('click', async () => {
 });
 
 // ==========================================
-// EVENTO 2: BUSCAR USUARIO EN TIEMPO REAL
+// EVENTO 2: BUSCAR USUARIO EN TIEMPO REAL (API)
 // ==========================================
-inputBusqueda.addEventListener('input', () => {
+let debounceTimer;
+inputBusqueda.addEventListener('input', async () => {
     const termino = inputBusqueda.value.trim().toLowerCase();
-    const todos = obtenerTodosLosUsuarios();
-    const filtrados = todos.filter(u =>
-        u.name.toLowerCase().includes(termino) ||
-        u.username.toLowerCase().includes(termino) ||
-        u.email.toLowerCase().includes(termino)
-    );
-    renderUsuarios(filtrados);
+
+    // Limpiar timer anterior
+    clearTimeout(debounceTimer);
+
+    if (termino === '') {
+        // Si está vacío, mostrar todos los usuarios cargados o mensaje inicial
+        const todos = obtenerTodosLosUsuarios();
+        renderUsuarios(todos.length > 0 ? todos : []);
+        return;
+    }
+
+    // Mostrar estado de búsqueda
+    contenedorUsuarios.innerHTML = '<p class="loading-text">Buscando usuarios...</p>';
+
+    // Debounce para no saturar la API
+    debounceTimer = setTimeout(async () => {
+        try {
+            // Importar getAllUsers directamente para buscar en API
+            const { getAllUsers } = await import('../../api/index.js');
+            const todosUsuarios = await getAllUsers();
+
+            // Filtrar localmente los resultados
+            const filtrados = todosUsuarios.filter(u =>
+                u.name?.toLowerCase().includes(termino) ||
+                u.username?.toLowerCase().includes(termino) ||
+                u.email?.toLowerCase().includes(termino)
+            );
+
+            // Guardar resultados en el estado local para que las acciones funcionen
+            guardarUsuarios(filtrados);
+
+            renderUsuarios(filtrados);
+
+            // Actualizar contador
+            actualizarTotal(filtrados.length);
+
+        } catch (error) {
+            console.error('Error buscando usuarios:', error);
+            contenedorUsuarios.innerHTML = `
+                <div class="filter-no-results">
+                    <div class="filter-no-results__icon">❌</div>
+                    <p class="filter-no-results__text">Error al buscar usuarios</p>
+                    <p class="filter-no-results__sub">Intenta de nuevo más tarde</p>
+                </div>
+            `;
+        }
+    }, 300); // 300ms de debounce
 });
 
 // ==========================================
@@ -76,16 +134,54 @@ inputBusqueda.addEventListener('input', () => {
 formulario.addEventListener('submit', async (evento) => {
     evento.preventDefault();
 
+    // Limpiar errores previos
+    const inputs = [inputNombre, inputUsername, inputEmail, inputPhone];
+    inputs.forEach(input => input.classList.remove('error'));
+    userNameError.textContent = '';
+    userUsernameError.textContent = '';
+    userEmailError.textContent = '';
+    userPhoneError.textContent = '';
+
     const datos = {
         name: inputNombre.value.trim(),
         username: inputUsername.value.trim(),
         email: inputEmail.value.trim(),
-        phone: inputPhone.value.trim(),
-        website: inputWebsite.value.trim(),
+        telefono: inputPhone.value.trim(),
     };
 
-    if (!datos.name || !datos.username || !datos.email) {
-        notificarError('Nombre, usuario y email son obligatorios');
+    let esValido = true;
+
+    if (!datos.name) {
+        inputNombre.classList.add('error');
+        userNameError.textContent = 'El nombre completo es obligatorio';
+        esValido = false;
+    }
+
+    if (!datos.username) {
+        inputUsername.classList.add('error');
+        userUsernameError.textContent = 'El nombre de usuario es obligatorio';
+        esValido = false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!datos.email) {
+        inputEmail.classList.add('error');
+        userEmailError.textContent = 'El correo electrónico es obligatorio';
+        esValido = false;
+    } else if (!emailRegex.test(datos.email)) {
+        inputEmail.classList.add('error');
+        userEmailError.textContent = 'Introduce un correo válido';
+        esValido = false;
+    }
+
+    if (!datos.telefono) {
+        inputPhone.classList.add('error');
+        userPhoneError.textContent = 'El teléfono es obligatorio';
+        esValido = false;
+    }
+
+    if (!esValido) {
+        notificarError('Por favor, corrige los errores en el formulario');
         return;
     }
 
@@ -125,7 +221,6 @@ contenedorUsuarios.addEventListener('click', async (evento) => {
         const username = tarjeta.querySelector('.user-username')?.textContent.replace(/.*:\s*/, '') ?? '';
         const email = tarjeta.querySelector('.user-email')?.textContent.replace(/.*:\s*/, '') ?? '';
         const phone = tarjeta.querySelector('.user-phone')?.textContent.replace(/.*:\s*/, '') ?? '';
-        const website = tarjeta.querySelector('.user-website')?.textContent.replace(/.*:\s*/, '') ?? '';
 
         modoEdicion = true;
         usuarioActualId = id;
@@ -134,7 +229,6 @@ contenedorUsuarios.addEventListener('click', async (evento) => {
         inputUsername.value = username;
         inputEmail.value = email;
         inputPhone.value = phone;
-        inputWebsite.value = website;
 
         formTitulo.textContent = 'Editar Usuario';
         btnSubmit.querySelector('.btn__text').textContent = 'Actualizar Usuario';
@@ -172,8 +266,7 @@ function actualizarTarjetaEnDOM(id, datos) {
     tarjeta.querySelector('.message-author').textContent = datos.name;
     upd('user-username', datos.username);
     upd('user-email', datos.email);
-    upd('user-phone', datos.phone);
-    upd('user-website', datos.website);
+    upd('user-phone', datos.telefono);
 }
 
 /**
@@ -183,6 +276,15 @@ function resetearFormulario() {
     modoEdicion = false;
     usuarioActualId = null;
     formulario.reset();
+    
+    // Limpiar errores al cancelar/resetear
+    const inputs = [inputNombre, inputUsername, inputEmail, inputPhone];
+    inputs.forEach(input => input.classList.remove('error'));
+    if (userNameError) userNameError.textContent = '';
+    if (userUsernameError) userUsernameError.textContent = '';
+    if (userEmailError) userEmailError.textContent = '';
+    if (userPhoneError) userPhoneError.textContent = '';
+
     formTitulo.textContent = 'Registrar Nuevo Usuario';
     btnSubmit.querySelector('.btn__text').textContent = 'Registrar Usuario';
     btnCancelar.classList.add('hidden');

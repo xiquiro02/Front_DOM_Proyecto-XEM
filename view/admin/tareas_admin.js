@@ -37,9 +37,9 @@ async function init() {
     btnLoadTasks.addEventListener('click', loadAndRenderTasks);
     searchTask.addEventListener('input', applyFilters);
     filterUserSelect.addEventListener('change', applyFilters);
-    
+
     taskForm.addEventListener('submit', handleSubmitTask);
-    
+
     tasksContainer.addEventListener('click', handleTaskAction);
 }
 
@@ -52,7 +52,7 @@ function renderUserCheckboxes(usuarios) {
         usersChecklistContainer.appendChild(pNoUsers);
         return;
     }
-    
+
     usersChecklistContainer.replaceChildren();
     usuarios.forEach(u => {
         const label = document.createElement('label');
@@ -60,9 +60,9 @@ function renderUserCheckboxes(usuarios) {
         input.type = 'checkbox';
         input.name = 'assignedUsers';
         input.value = u.id;
-        
+
         const texto = document.createTextNode(` ${u.name} (@${u.username})`);
-        
+
         label.appendChild(input);
         label.appendChild(texto);
         usersChecklistContainer.appendChild(label);
@@ -101,9 +101,9 @@ async function loadAndRenderTasks() {
 function applyFilters() {
     const searchVal = searchTask.value.toLowerCase();
     const userIdVal = filterUserSelect.value;
-    
+
     let filtradas = todasLasTareas.filter(t => t.title.toLowerCase().includes(searchVal));
-    
+
     if (userIdVal) {
         // La propiedad userId representa la asignación de la tarea.
         // En JSONPlaceholder las tareas solo tienen un userId. Normalmente esto sería una verificación de arreglo para múltiples usuarios.
@@ -115,9 +115,9 @@ function applyFilters() {
             return String(t.userId) === String(userIdVal);
         });
     }
-    
+
     badgeStatus.textContent = `${filtradas.length} tareas`;
-    
+
     if (filtradas.length === 0) {
         tasksContainer.replaceChildren();
         const pNoTasks = document.createElement('p');
@@ -135,10 +135,10 @@ async function handleSubmitTask(e) {
     const titulo = taskTitle.value.trim();
     if (!titulo) return notificarError("El título es obligatorio");
     const descripcion = taskDescription.value.trim();
-    
+
     const checkedBoxes = document.querySelectorAll('input[name="assignedUsers"]:checked');
     const assignedUserIds = Array.from(checkedBoxes).map(cb => cb.value);
-    
+
     if (assignedUserIds.length === 0) {
         return notificarError("Debe seleccionar al menos un usuario.");
     }
@@ -153,13 +153,13 @@ async function handleSubmitTask(e) {
                 userId: assignedUserIds[0]
             };
             const respondida = await updateTarea(editandoId, datosActualizados);
-            
+
             // Actualizar en el estado local
             const idx = todasLasTareas.findIndex(t => String(t.id) === String(editandoId));
             if (idx !== -1) {
                 todasLasTareas[idx] = { ...todasLasTareas[idx], ...respondida };
             }
-            
+
             resetForm();
             applyFilters();
             notificarExito("Tarea actualizada correctamente");
@@ -176,7 +176,7 @@ async function handleSubmitTask(e) {
             assignedUsers: assignedUserIds,
             userId: assignedUserIds[0]
         };
-        
+
         try {
             const created = await createTarea(newTaskParams);
             created.assignedUsers = assignedUserIds;
@@ -202,13 +202,19 @@ function resetForm() {
 }
 
 async function handleStatusChange(idTarea, nuevoEstado) {
-    // Ruta simulada
     try {
         const idx = todasLasTareas.findIndex(t => String(t.id) === String(idTarea));
         if (idx !== -1) {
-            todasLasTareas[idx].status = nuevoEstado;
-            todasLasTareas[idx].completed = (nuevoEstado === 'completed');
-            // Normalmente se esperaría a updateTareaStatus(idTarea, nuevoEstado === 'completed');
+            const tareaExistente = todasLasTareas[idx];
+            const datosParaActualizar = {
+                ...tareaExistente,
+                status: nuevoEstado,
+                completed: (nuevoEstado === 'completed')
+            };
+            const respondida = await updateTarea(idTarea, datosParaActualizar);
+
+            // Actualizar estado local usando los datos procesados en backend
+            todasLasTareas[idx] = respondida;
             applyFilters();
             notificarExito("Estado actualizado");
         }
@@ -220,7 +226,7 @@ async function handleStatusChange(idTarea, nuevoEstado) {
 async function handleTaskAction(e) {
     const id = e.target.getAttribute('data-id');
     if (!id) return;
-    
+
     if (e.target.classList.contains('btn-eliminar-tarea')) {
         const conf = await mostrarConfirmacion("¿Eliminar tarea globalmente?");
         if (!conf) return;
@@ -248,7 +254,7 @@ function prepararEdicion(id) {
     editandoId = id;
     taskTitle.value = tarea.title;
     taskDescription.value = tarea.body || "";
-    
+
     // Marcar los checkboxes de usuarios asignados
     document.querySelectorAll('input[name="assignedUsers"]').forEach(cb => {
         if (tarea.assignedUsers && tarea.assignedUsers.includes(cb.value)) {

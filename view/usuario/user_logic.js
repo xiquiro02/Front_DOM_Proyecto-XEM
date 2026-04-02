@@ -131,10 +131,10 @@ async function handleStatusChange(idTarea, nuevoEstado) {
  * Esta función busca al usuario por ID y luego carga sus tareas.
  */
 async function manejarBusquedaUsuario() {
-    const id = parseInt(searchInput.value);
-    if (!id || isNaN(id)) {
+    const nombreBuscado = searchInput.value.trim().toLowerCase();
+    if (!nombreBuscado) {
         searchError.style.display = "block";
-        searchError.textContent = "Ingrese un ID válido.";
+        searchError.textContent = "Ingrese un nombre válido.";
         return;
     }
 
@@ -143,27 +143,39 @@ async function manejarBusquedaUsuario() {
     welcomeTitle.textContent = "Buscando...";
     welcomeSubtitle.textContent = "Por favor espera.";
     contenedorTareas.replaceChildren();
-    
+
     const pLoading = document.createElement('p');
     pLoading.className = 'loading-text';
     pLoading.style.textAlign = 'center';
     pLoading.style.padding = '2rem';
     pLoading.style.color = '#6b7280';
     pLoading.textContent = 'Cargando...';
-    
+
     contenedorTareas.appendChild(pLoading);
 
-    console.log(`Buscando usuario en: ${BASE_URL}/usuarios/${id}`);
+    console.log(`Buscando usuario por nombre: ${nombreBuscado}`);
     try {
-        const respuesta = await fetch(`${BASE_URL}/usuarios/${id}`);
+        const respuesta = await fetch(`${BASE_URL}/usuarios`);
         if (!respuesta.ok) {
-            console.warn(`Respuesta no OK para usuario ${id}:`, respuesta.status);
-            throw new Error("No encontrado");
+            console.warn(`Respuesta no OK buscando usuarios:`, respuesta.status);
+            throw new Error("No se pudo conectar");
         }
 
         const json = await respuesta.json();
-        console.log("Datos recibidos del backend:", json);
-        const usuario = json.data;
+        const todosLosUsuarios = json.data;
+
+        // Buscamos coincidencia en el nombre o en el nombre de usuario
+        const usuarioEncontrado = todosLosUsuarios.find(u =>
+            u.name.toLowerCase().includes(nombreBuscado) ||
+            u.username.toLowerCase().includes(nombreBuscado)
+        );
+
+        if (!usuarioEncontrado) {
+            throw new Error("No encontrado");
+        }
+
+        console.log("Datos recibidos del backend:", usuarioEncontrado);
+        const usuario = usuarioEncontrado;
         usuarioActualId = usuario.id;
 
         // Actualizamos cabecera dinámica
@@ -184,7 +196,7 @@ async function manejarBusquedaUsuario() {
         searchError.style.display = "block";
         searchError.textContent = `Error: ${error.message === 'No encontrado' ? 'Usuario no encontrado' : 'Error de conexión con el servidor'}`;
         welcomeTitle.textContent = "¡Hola, Usuario! 👋";
-        welcomeSubtitle.textContent = "Busca tu ID para ver tus tareas.";
+        welcomeSubtitle.textContent = "Busca tu nombre para ver tus tareas.";
         contenedorTareas.replaceChildren(); // Limpiamos las tareas
 
         statTotales.textContent = "0";
@@ -212,7 +224,7 @@ async function init() {
     pInit.style.textAlign = 'center';
     pInit.style.padding = '2rem';
     pInit.style.color = '#6b7280';
-    pInit.textContent = 'Busca tu ID de usuario en el panel izquierdo.';
+    pInit.textContent = 'Busca tu nombre de usuario en el panel izquierdo.';
     contenedorTareas.appendChild(pInit);
 
     // Configuramos qué pasa cuando haces clic en los botones de "Pendientes", "Hechas", etc.

@@ -1,6 +1,6 @@
 import { getTareasByUserId, createTarea, deleteTarea, updateTarea } from "../api/index.js";
 import { armarTareas, notificarExito, notificarError, mostrarConfirmacion } from "../ui/index.js";
-import { guardarTareas, agregarTarea, actualizarTareaEnEstado, eliminarTareaDelEstado, obtenerTareasFiltradas } from "./filterService.js";
+import { guardarTareas, agregarTarea, actualizarTareaEnEstado, eliminarTareaDelEstado, obtenerTareasFiltradas, obtenerTodasLasTareas } from "./filterService.js";
 
 /**
  * Servicio para cargar y mostrar tareas.
@@ -51,7 +51,11 @@ export const procesarCreacionTarea = async (nuevaTarea, contenedorTareas, formul
  */
 export const procesarActualizacionTarea = async (tareaActualId, datosActualizados, helpers) => {
     try {
-        const tareaActualizada = await updateTarea(tareaActualId, datosActualizados);
+        const tareasGuardadas = obtenerTodasLasTareas();
+        const tareaPrev = tareasGuardadas.find(t => String(t.id) === String(tareaActualId)) || {};
+        const datosCompletos = { ...tareaPrev, ...datosActualizados };
+
+        const tareaActualizada = await updateTarea(tareaActualId, datosCompletos);
         // Preservar el status personalizado si viene en datosActualizados
         tareaActualizada.status = datosActualizados.status || (tareaActualizada.completed ? 'completed' : 'pending');
         actualizarTareaEnEstado(tareaActualId, tareaActualizada); // actualizar en filterService

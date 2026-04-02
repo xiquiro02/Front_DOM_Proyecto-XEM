@@ -58,8 +58,7 @@ export const armarListaUsuarios = (contenedor, listaUsuarios) => {
         const campos = [
             { icono: '🏷️', etiqueta: 'Usuario', valor: usuario.username, clase: 'user-username' },
             { icono: '📧', etiqueta: 'Email', valor: usuario.email, clase: 'user-email' },
-            { icono: '📞', etiqueta: 'Teléfono', valor: usuario.phone, clase: 'user-phone' },
-            { icono: '🌐', etiqueta: 'Web', valor: usuario.website, clase: 'user-website' },
+            { icono: '📞', etiqueta: 'Teléfono', valor: usuario.telefono, clase: 'user-phone' },
         ];
 
         campos.forEach(({ icono, etiqueta, valor, clase }) => {

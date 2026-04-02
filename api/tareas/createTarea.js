@@ -1,11 +1,17 @@
 import { BASE_URL } from '../config.js';
 
 export const createTarea = async (nuevaTarea) => {
+    const frontToBack = {
+        'pending': 'pendiente',
+        'in-progress': 'en proceso',
+        'completed': 'completada'
+    };
+
     // Mapeo hacia el backend
     const bodyBackend = {
         titulo: nuevaTarea.title,
         descripcion: nuevaTarea.body || 'Sin descripción',
-        estado: nuevaTarea.status || (nuevaTarea.completed ? 'completada' : 'pendiente'),
+        estado: frontToBack[nuevaTarea.status] || (nuevaTarea.completed ? 'completada' : 'pendiente'),
         userId: nuevaTarea.userId
     };
 

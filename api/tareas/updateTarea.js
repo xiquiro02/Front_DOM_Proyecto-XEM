@@ -1,11 +1,18 @@
 import { BASE_URL } from '../config.js';
 
 export const updateTarea = async (tareaId, tarea) => {
+    const frontToBack = {
+        'pending': 'pendiente',
+        'in-progress': 'en proceso',
+        'completed': 'completada'
+    };
+
     // Mapeamos los campos del frente (Inglés) a los del backend (Español)
     const bodyBackend = {
         titulo: tarea.title,
         descripcion: tarea.body,
-        estado: tarea.status || (tarea.completed ? 'completada' : 'pendiente')
+        estado: frontToBack[tarea.status] || (tarea.completed ? 'completada' : 'pendiente'),
+        userId: tarea.userId
     };
 
     try {

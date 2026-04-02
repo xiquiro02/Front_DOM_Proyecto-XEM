@@ -60,10 +60,14 @@ export const cargarTodosLosUsuarios = async (contenedor, renderFn) => {
 export const procesarCreacionUsuario = async (nuevoUsuario, formulario, renderFn) => {
     try {
         const usuarioCreado = await createUsuario(nuevoUsuario);
-        // JSONPlaceholder devuelve id=11; generamos uno local para que se muestre bien
+        // El backend devuelve name, phone (inglés), transformamos a español para el estado
         const usuarioConId = {
-            ...nuevoUsuario,
-            id: usuarioCreado.id || Date.now(),
+            id: usuarioCreado?.id || Date.now(),
+            name: usuarioCreado?.name || nuevoUsuario.name || nuevoUsuario.nombre,
+            username: usuarioCreado?.username || nuevoUsuario.username,
+            email: usuarioCreado?.email || nuevoUsuario.email,
+            telefono: usuarioCreado?.telefono || usuarioCreado?.phone || nuevoUsuario.telefono,
+            website: usuarioCreado?.website || nuevoUsuario.website
         };
         agregarUsuarioEstado(usuarioConId);
         formulario.reset();

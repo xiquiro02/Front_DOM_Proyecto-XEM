@@ -78,22 +78,22 @@
     margin-bottom: 10px; 
 }
 
-.btn-editar-tarea {
+.btn-editar-tarea, .btn-editar-usuario {
     background-color: var(--color-boton-editar);
     color: var(--color-text-botones);
 }
 
-.btn-editar-tarea:hover {
+.btn-editar-tarea:hover, .btn-editar-usuario:hover {
     background-color: var(--color-boton-editar-hover);
     transform: scale(1.05);
 }
 
-.btn-eliminar-tarea {
+.btn-eliminar-tarea, .btn-eliminar-usuario {
     background-color: var(--color-boton-eliminar);
     color: var(--color-text-botones);
 }
 
-.btn-eliminar-tarea:hover {
+.btn-eliminar-tarea:hover, .btn-eliminar-usuario:hover {
     background-color: var(--color-boton-eliminar-hover);
     transform: scale(1.05);
 }
