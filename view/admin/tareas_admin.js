@@ -105,15 +105,9 @@ function applyFilters() {
     let filtradas = todasLasTareas.filter(t => t.title.toLowerCase().includes(searchVal));
 
     if (userIdVal) {
-        // La propiedad userId representa la asignación de la tarea.
-        // En JSONPlaceholder las tareas solo tienen un userId. Normalmente esto sería una verificación de arreglo para múltiples usuarios.
-        // Como simulación, filtramos si t.userId coincide, o si nuestra estructura de arreglo simulada coincide.
-        filtradas = filtradas.filter(t => {
-            if (t.assignedUsers && Array.isArray(t.assignedUsers)) {
-                return t.assignedUsers.includes(String(userIdVal)) || t.assignedUsers.includes(Number(userIdVal));
-            }
-            return String(t.userId) === String(userIdVal);
-        });
+        filtradas = filtradas.filter(t =>
+            Array.isArray(t.usuarios) && t.usuarios.some(u => String(u.id) === String(userIdVal))
+        );
     }
 
     badgeStatus.textContent = `${filtradas.length} tareas`;
@@ -148,9 +142,8 @@ async function handleSubmitTask(e) {
         try {
             const datosActualizados = {
                 title: titulo,
-                body: descripcion, // Mapeamos body para que el api lo use
-                assignedUsers: assignedUserIds,
-                userId: assignedUserIds[0]
+                body: descripcion,
+                userIds: assignedUserIds.map(Number)
             };
             const respondida = await updateTarea(editandoId, datosActualizados);
 
@@ -173,8 +166,7 @@ async function handleSubmitTask(e) {
             body: descripcion,
             completed: false,
             status: 'pending',
-            assignedUsers: assignedUserIds,
-            userId: assignedUserIds[0]
+            userIds: assignedUserIds.map(Number)
         };
 
         try {
@@ -256,14 +248,11 @@ function prepararEdicion(id) {
     taskDescription.value = tarea.body || "";
 
     // Marcar los checkboxes de usuarios asignados
+    const idsAsignados = Array.isArray(tarea.usuarios)
+        ? tarea.usuarios.map(u => String(u.id))
+        : [];
     document.querySelectorAll('input[name="assignedUsers"]').forEach(cb => {
-        if (tarea.assignedUsers && tarea.assignedUsers.includes(cb.value)) {
-            cb.checked = true;
-        } else if (String(tarea.userId) === String(cb.value)) {
-            cb.checked = true;
-        } else {
-            cb.checked = false;
-        }
+        cb.checked = idsAsignados.includes(String(cb.value));
     });
 
     taskForm.querySelector('button[type="submit"]').textContent = "Actualizar Tarea";

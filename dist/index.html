@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Tareas - DOM</title>
+
+  <script type="module" crossorigin src="/Front_DOM/assets/index-DHs1_Dii.js"></script>
+  <link rel="stylesheet" crossorigin href="/Front_DOM/assets/index-Qy0Re-p2.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Encabezado principal -->
+        <header class="header">
+            <h1 class="header__title">Gestión de Tareas de Usuario</h1>
+            <p class="header__subtitle">Consulta usuarios y asigna tareas dinámicamente</p>
+        </header>
+
+        <!-- Sección de Búsqueda de Usuario -->
+        <section class="search-section">
+            <div class="card">
+                <h2 class="card__title">Buscar Usuario</h2>
+                <form id="searchForm" class="form" novalidate>
+                    <div class="form__group">
+                        <label for="userId" class="form__label">ID de Usuario (1-10)</label>
+                        <input type="number" id="userId" class="form__input" placeholder="Ej: 1" min="1" max="10"
+                            required>
+                        <span class="form__error" id="userIdError"></span>
+                    </div>
+                    <button type="submit" class="btn btn--primary">
+                        <span class="btn__text">Buscar</span>
+                        <span class="btn__icon">🔍</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Información del Usuario (Oculto inicialmente) -->
+        <section id="userInfoSection" class="user-section hidden">
+            <div class="card">
+                <h2 class="card__title">Información del Usuario</h2>
+                <div id="userInfoContainer"></div>
+            </div>
+        </section>
+
+        <!-- Formulario de Tareas (Oculto inicialmente) -->
+        <section id="taskFormSection" class="form-section hidden">
+            <div class="card">
+                <h2 class="card__title">Nueva Tarea</h2>
+                <form id="taskForm" class="form" novalidate>
+                    <div class="form__group">
+                        <label for="taskTitle" class="form__label">Título de la Tarea</label>
+                        <input type="text" id="taskTitle" class="form__input" placeholder="Título..." required>
+                    </div>
+                    <!-- Agregamos Descripción y Estado como pide el enunciado -->
+                    <div class="form__group">
+                        <label for="taskBody" class="form__label">Descripción</label>
+                        <textarea id="taskBody" class="form__input form__textarea" placeholder="Descripción..."
+                            rows="3"></textarea>
+                    </div>
+                    <div class="form__group">
+                        <label for="taskCompleted" class="form__label">Estado</label>
+                        <select id="taskCompleted" class="form__input">
+                            <option value="false">🕐 Pendiente</option>
+                            <option value="in-progress">⚡ En proceso</option>
+                            <option value="true">✅ Completada</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn--primary" id="addTaskBtn">
+                        <span class="btn__text">Agregar Tarea</span>
+                        <span class="btn__icon">➤</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Filtros de Tareas (Oculto inicialmente) -->
+        <section id="filterSection" class="filter-section hidden">
+            <div id="filterContainer"></div>
+        </section>
+
+        <!-- Lista de Tareas -->
+        <section id="tasksListSection" class="messages-section hidden">
+            <div class="messages-header">
+                <h2 class="messages-header__title">Tareas Asignadas</h2>
+            </div>
+
+            <div id="tasksContainer" class="messages-container">
+                <!-- Las tareas se agregarán aquí dinámicamente -->
+            </div>
+        </section>
+
+
+        <!-- Footer informativo -->
+        <footer class="footer">
+            <p class="footer__text">Ejercicio de manipulación del DOM | SENA - Desarrollo Web</p>
+        </footer>
+    </div>
+
+    <!-- Script tipo módulo para poder usar import/export -->
+</body>
+
+</html>

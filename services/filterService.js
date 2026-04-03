@@ -146,7 +146,8 @@ export const obtenerTareasFiltradas = () => {
 
         let pasaUsuario = true;
         if (filtroUsuario !== 'all') {
-            pasaUsuario = String(tarea.userId) === String(filtroUsuario);
+            pasaUsuario = Array.isArray(tarea.usuarios)
+                && tarea.usuarios.some(u => String(u.id) === String(filtroUsuario));
         }
 
         return pasaEstado && pasaUsuario;

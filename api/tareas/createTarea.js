@@ -12,7 +12,7 @@ export const createTarea = async (nuevaTarea) => {
         titulo: nuevaTarea.title,
         descripcion: nuevaTarea.body || 'Sin descripción',
         estado: frontToBack[nuevaTarea.status] || (nuevaTarea.completed ? 'completada' : 'pendiente'),
-        userId: nuevaTarea.userId
+        userIds: nuevaTarea.userIds || []
     };
 
     const opciones = {

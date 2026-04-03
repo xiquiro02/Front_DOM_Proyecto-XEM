@@ -19,7 +19,7 @@ export const armarTareas = (elemento, listaTareas) => {
         const divTarea = document.createElement('div');
         divTarea.className = 'message-card';
         divTarea.setAttribute('data-status', estadoReal);           // para filtros por estado
-        divTarea.setAttribute('data-user-id', tarea.userId || ''); // para filtros por usuario
+        divTarea.setAttribute('data-user-id', tarea.usuarios?.[0]?.id ?? ''); // para filtros por usuario
 
         // PASO 2: Crear la cabecera (Título y Estado)
         const divCabecera = document.createElement('div');

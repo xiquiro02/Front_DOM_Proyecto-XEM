@@ -21,26 +21,16 @@ export const asignarTareaAVariosUsuarios = async (datosTarea, idsUsuarios) => {
         return { exitosos: 0, fallidos: 0 };
     }
 
-    const promesas = idsUsuarios.map(userId =>
-        createTarea({
+    try {
+        await createTarea({
             ...datosTarea,
-            userId,
+            userIds: idsUsuarios,
             createdAt: Date.now(),
-        })
-    );
-
-    const resultados = await Promise.allSettled(promesas);
-
-    const exitosos = resultados.filter(r => r.status === 'fulfilled').length;
-    const fallidos  = resultados.filter(r => r.status === 'rejected').length;
-
-    if (fallidos === 0) {
-        notificarExito(`Tarea asignada correctamente a ${exitosos} usuario${exitosos !== 1 ? 's' : ''}.`);
-    } else if (exitosos === 0) {
-        notificarError('No se pudo asignar la tarea a ningún usuario.');
-    } else {
-        notificarInfo(`Tarea asignada a ${exitosos} usuario${exitosos !== 1 ? 's' : ''}. ${fallidos} fallaron.`);
+        });
+        notificarExito(`Tarea asignada correctamente a ${idsUsuarios.length} usuario${idsUsuarios.length !== 1 ? 's' : ''}.`);
+        return { exitosos: idsUsuarios.length, fallidos: 0 };
+    } catch (error) {
+        notificarError('No se pudo asignar la tarea.');
+        return { exitosos: 0, fallidos: idsUsuarios.length };
     }
-
-    return { exitosos, fallidos };
 };

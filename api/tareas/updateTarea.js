@@ -11,8 +11,7 @@ export const updateTarea = async (tareaId, tarea) => {
     const bodyBackend = {
         titulo: tarea.title,
         descripcion: tarea.body,
-        estado: frontToBack[tarea.status] || (tarea.completed ? 'completada' : 'pendiente'),
-        userId: tarea.userId
+        estado: frontToBack[tarea.status] || (tarea.completed ? 'completada' : 'pendiente')
     };
 
     try {
