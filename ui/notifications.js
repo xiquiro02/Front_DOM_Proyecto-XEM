@@ -1,21 +1,19 @@
 /**
  * Módulo: notifications.js
  * Objetivo: Gestionar y mostrar notificaciones visuales (éxito, error, información).
- *
- * Módulo completamente independiente: no depende de la API ni de ningún otro módulo.
- * Puede ser reutilizado desde cualquier parte de la aplicación importando sus funciones.
  */
 
 // ==========================================
 // CONSTANTES DE CONFIGURACIÓN
 // ==========================================
-
+// Diccionario que define los estilos, íconos y tiempos de exposición para cada tipo de alerta
 const TIPOS = {
     exito:       { clase: 'notification--success', icono: '✅', duracion: 3500 },
     error:       { clase: 'notification--error',   icono: '❌', duracion: 5000 },
     informacion: { clase: 'notification--info',    icono: 'ℹ️', duracion: 3500 },
 };
 
+// Identificador único para el nodo raíz donde se inyectarán todas las notificaciones
 const ID_CONTENEDOR = 'notificationsContainer';
 
 // ==========================================
@@ -23,12 +21,12 @@ const ID_CONTENEDOR = 'notificationsContainer';
 // ==========================================
 
 /**
- * Retorna el contenedor de notificaciones del DOM.
- * Si no existe, lo crea e inyecta en el <body>.
- * @returns {HTMLElement}
+ * Retorna el contenedor de notificaciones del DOM o lo crea si no existe.
  */
 const obtenerContenedor = () => {
+    // Intenta localizar el contenedor por su ID exclusivo
     let contenedor = document.getElementById(ID_CONTENEDOR);
+    // Si no se encuentra (primera ejecución), crea un <div> con atributos de accesibilidad
     if (!contenedor) {
         contenedor = document.createElement('div');
         contenedor.id = ID_CONTENEDOR;
@@ -37,6 +35,7 @@ const obtenerContenedor = () => {
         contenedor.setAttribute('aria-label', 'Notificaciones');
         document.body.appendChild(contenedor);
     }
+    // Devuelve la referencia al elemento (existente o recién creado)
     return contenedor;
 };
 
@@ -45,30 +44,32 @@ const obtenerContenedor = () => {
 // ==========================================
 
 /**
- * Crea el elemento DOM de una notificación.
- * @param {string} mensaje - Texto a mostrar.
- * @param {Object} config  - Configuración del tipo ({ clase, icono }).
- * @returns {HTMLElement}
+ * Crea la estructura DOM de una notificación individual.
  */
 const crearElementoNotificacion = (mensaje, config) => {
+    // Crea la base de la notificación con sus clases CSS y rol de alerta
     const notif = document.createElement('div');
     notif.className = `notification ${config.clase}`;
     notif.setAttribute('role', 'alert');
 
+    // Crea e inserta el ícono descriptivo (emoji) del tipo de alerta
     const spanIcono = document.createElement('span');
     spanIcono.className = 'notification__icono';
     spanIcono.textContent = config.icono;
 
+    // Crea e inserta el texto del mensaje proporcionado
     const spanMensaje = document.createElement('span');
     spanMensaje.className = 'notification__mensaje';
     spanMensaje.textContent = mensaje;
 
+    // Crea el botón de cierre manual (X) con su escuchador de eventos
     const btnCerrar = document.createElement('button');
     btnCerrar.className = 'notification__cerrar';
     btnCerrar.setAttribute('aria-label', 'Cerrar notificación');
     btnCerrar.textContent = '✕';
     btnCerrar.addEventListener('click', () => cerrarNotificacion(notif));
 
+    // Ensambla y devuelve el componente de notificación completo
     notif.append(spanIcono, spanMensaje, btnCerrar);
     return notif;
 };
@@ -78,19 +79,21 @@ const crearElementoNotificacion = (mensaje, config) => {
 // ==========================================
 
 /**
- * Aplica la animación de salida y elimina el elemento del DOM.
- * @param {HTMLElement} elemento - El elemento de notificación a cerrar.
+ * Ejecuta la animación de salida y remueve el elemento físicamente.
  */
 const cerrarNotificacion = (elemento) => {
+    // Dispara la animación de salida mediante una clase CSS
     elemento.classList.add('notification--saliendo');
 
     let ejecutado = false;
+    // Función interna para limpiar el DOM de forma segura
     const eliminar = () => {
         if (ejecutado) return;
         ejecutado = true;
         elemento.remove();
     };
 
+    // Espera a que termine la animación o usa un temporizador de respaldo (fallback)
     elemento.addEventListener('animationend', eliminar, { once: true });
     setTimeout(eliminar, 400);
 };
@@ -100,18 +103,19 @@ const cerrarNotificacion = (elemento) => {
 // ==========================================
 
 /**
- * Muestra una notificación en pantalla.
- * @param {string} mensaje  - Texto del mensaje.
- * @param {'exito'|'error'|'informacion'} tipo - Tipo de notificación.
+ * Orquestador principal para desplegar alertas en la interfaz.
  */
 export const mostrarNotificacion = (mensaje, tipo = 'informacion') => {
+    // Selecciona la configuración del tipo solicitado o usa 'informacion' como base
     const config = TIPOS[tipo] ?? TIPOS.informacion;
+    // Prepara el contenedor y construye el nuevo elemento visual
     const contenedor = obtenerContenedor();
     const elemento = crearElementoNotificacion(mensaje, config);
 
+    // Inyecta la notificación en la pila de alertas del usuario
     contenedor.appendChild(elemento);
 
-    // Auto-cierre después del tiempo configurado
+    // Configura la autodestrucción de la alerta tras expirar su tiempo de vida
     setTimeout(() => {
         if (elemento.isConnected) {
             cerrarNotificacion(elemento);
@@ -124,51 +128,50 @@ export const mostrarNotificacion = (mensaje, tipo = 'informacion') => {
 // ==========================================
 
 /**
- * Muestra un diálogo de confirmación modal no bloqueante.
- * Devuelve una Promise<boolean>: true si el usuario confirma, false si cancela.
- * @param {string} mensaje - Texto de la pregunta a mostrar.
- * @returns {Promise<boolean>}
+ * Despliega un modal interactivo para decisiones críticas del usuario.
  */
 export const mostrarConfirmacion = (mensaje) => {
     return new Promise((resolve) => {
-        // Guardar el elemento que tenía el foco antes de abrir el diálogo
+        // Almacena el foco actual para restaurarlo al cerrar el diálogo
         const elementoAnterior = document.activeElement;
 
-        // Overlay
+        // Crea el fondo oscuro bloqueante (overlay)
         const overlay = document.createElement('div');
         overlay.className = 'confirm-overlay';
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
 
-        // Caja del diálogo
+        // Construye el cuerpo central del diálogo
         const caja = document.createElement('div');
         caja.className = 'confirm-dialog';
 
-        // Ícono
+        // Inserta un ícono de advertencia visual
         const icono = document.createElement('div');
         icono.className = 'confirm-dialog__icono';
         icono.textContent = '⚠️';
 
-        // Mensaje
+        // Configura el texto de la pregunta dirigida al usuario
         const parrafo = document.createElement('p');
         parrafo.className = 'confirm-dialog__mensaje';
         parrafo.textContent = mensaje;
 
-        // Botones
+        // Contenedor horizontal para los botones de acción
         const contenedorBtns = document.createElement('div');
         contenedorBtns.className = 'confirm-dialog__botones';
 
+        // Botón de acción afirmativa (ej: Eliminar)
         const btnConfirmar = document.createElement('button');
         btnConfirmar.className = 'btn btn--danger confirm-dialog__btn-confirmar';
         btnConfirmar.textContent = 'Eliminar';
 
+        // Botón de acción negativa (ej: Cancelar)
         const btnCancelar = document.createElement('button');
         btnCancelar.className = 'btn btn--secondary confirm-dialog__btn-cancelar';
         btnCancelar.textContent = 'Cancelar';
 
+        // Lógica de cierre que resuelve la promesa y limpia la interfaz
         const cerrarDialog = (resultado) => {
             overlay.classList.add('confirm-overlay--saliendo');
-
             let ejecutado = false;
             const limpiar = () => {
                 if (ejecutado) return;
@@ -179,22 +182,22 @@ export const mostrarConfirmacion = (mensaje) => {
                 }
                 resolve(resultado);
             };
-
             overlay.addEventListener('animationend', limpiar, { once: true });
-            // Fallback: si la animación no dispara, limpiar igualmente
             setTimeout(limpiar, 400);
         };
 
+        // Vincula las acciones del usuario a los botones y al fondo del modal
         btnConfirmar.addEventListener('click', () => cerrarDialog(true));
         btnCancelar.addEventListener('click', () => cerrarDialog(false));
         overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrarDialog(false); });
 
+        // Ensambla y monta el modal completo en el <body>
         contenedorBtns.append(btnCancelar, btnConfirmar);
         caja.append(icono, parrafo, contenedorBtns);
         overlay.append(caja);
         document.body.appendChild(overlay);
 
-        // Focus al botón cancelar por defecto (mejor UX)
+        // Facilita la navegación enviando el foco al botón de cancelar (seguridad UX)
         btnCancelar.focus();
     });
 };
@@ -203,20 +206,11 @@ export const mostrarConfirmacion = (mensaje) => {
 // ATAJOS PÚBLICOS (API del módulo)
 // ==========================================
 
-/**
- * Muestra una notificación de éxito (verde).
- * @param {string} mensaje
- */
+// Método rápido para emitir una alerta de éxito
 export const notificarExito = (mensaje) => mostrarNotificacion(mensaje, 'exito');
 
-/**
- * Muestra una notificación de error (rojo).
- * @param {string} mensaje
- */
+// Método rápido para emitir una alerta de fallo crítico
 export const notificarError = (mensaje) => mostrarNotificacion(mensaje, 'error');
 
-/**
- * Muestra una notificación informativa (azul).
- * @param {string} mensaje
- */
+// Método rápido para emitir información contextual al usuario
 export const notificarInfo = (mensaje) => mostrarNotificacion(mensaje, 'informacion');

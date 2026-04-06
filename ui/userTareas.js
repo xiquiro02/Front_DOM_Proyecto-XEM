@@ -1,63 +1,56 @@
 /**
  * Componente: userTareas.js
- * Objetivo: Crear y mostrar la lista de tareas en la Vista de Usuario.
- * 
- * Esta función recibe:
- * 1. elemento: El lugar donde vamos a poner las tareas.
- * 2. listaTareas: La lista de tareas que queremos mostrar.
- * 3. onStatusChange: Una función que se activa al cambiar de estado.
+ * Objetivo: Crear y mostrar la lista interactiva de tareas en la Vista de Usuario.
  */
 export const armarTareasUsuario = (elemento, listaTareas, onStatusChange) => {
 
-    // Usamos un bucle for tradicional para recorrer la lista de tareas
+    // Itera sobre el conjunto de tareas para construir individualmente sus representaciones visuales
     for (let i = 0; i < listaTareas.length; i++) {
-        // Obtenemos la tarea actual de la lista
         const tarea = listaTareas[i];
 
-        // Averiguamos el estado real (si no tiene 'status', usamos 'completed')
+        // Normaliza el estado de la tarea (Pendiente/Proceso/Hecho) para asegurar coherencia en la UI
         let estadoReal = tarea.status;
         if (!estadoReal) {
-            // Si no tiene status pero dice completed true, es 'completed'
+            // Deriva el estado del valor booleano 'completed' si el campo 'status' no está definido
             if (tarea.completed) {
                 estadoReal = 'completed';
             } else {
-                // Si no, es 'pending' por defecto
                 estadoReal = 'pending';
             }
         }
 
-        // Creamos el contenedor principal de la tarjeta (el recuadro blanco)
+        // Crea el cuerpo de la tarjeta y le asigna la clase base de diseño 'task-card'
         const divCard = document.createElement('div');
-        // Le ponemos la clase de estilo 'task-card'
         divCard.classList.add('task-card');
-        // Si la tarea está completada, le añadimos también esa clase para que se vea tachada
+
+        // Añade un efecto visual (ej: tachado o gris) si la tarea ya ha sido finalizada
         if (estadoReal === 'completed') {
             divCard.classList.add('completed');
         }
-        // Guardamos el ID de la tarea en un atributo de datos
+        // Registra el ID de la tarea como metadato del elemento para facilitar acciones posteriores
         divCard.setAttribute('data-id', tarea.id);
 
-        // Creamos la sección de información (el círculo y el texto)
+        // Crea la agrupación lateral para los elementos informativos (chequeo + título)
         const divInfo = document.createElement('div');
         divInfo.classList.add('task-info');
 
-        // Creamos el pequeño círculo de la izquierda (el check)
+        // Crea el componente circular interactivo que actúa como interruptor de estado
         const divCheck = document.createElement('div');
         divCheck.classList.add('task-check');
 
-        // Dependiendo del estado, ponemos un símbolo diferente adentro del círculo
+        // Inserta el símbolo visual representativo del progreso actual dentro del círculo
         if (estadoReal === 'completed') {
-            divCheck.textContent = '✓'; // Marca de completado
+            divCheck.textContent = '✓';
         } else if (estadoReal === 'in-progress') {
-            divCheck.textContent = '⚡'; // Marca de proceso
+            divCheck.textContent = '⚡';
         } else {
-            divCheck.textContent = '';  // Círculo vacío para pendientes
+            divCheck.textContent = '';
         }
 
-        // Configuramos qué pasa cuando el usuario hace clic en el círculo
+        // Vincula el evento de clic al círculo para rotar cíclicamente entre los estados disponibles
         divCheck.addEventListener('click', () => {
-            // Creamos una lógica simple de "rotación" de estados
             let nuevoEstado = '';
+            // Define la lógica de transición: Pendiente → En proceso → Hecho → (vuelve a empezar)
             if (estadoReal === 'pending') {
                 nuevoEstado = 'in-progress';
             } else if (estadoReal === 'in-progress') {
@@ -66,26 +59,26 @@ export const armarTareasUsuario = (elemento, listaTareas, onStatusChange) => {
                 nuevoEstado = 'pending';
             }
 
-            // Si nos pasaron la función de cambio, la llamamos con el nuevo estado
+            // Dispara la función de callback externa si ha sido proporcionada para actualizar datos
             if (onStatusChange) {
                 onStatusChange(tarea.id, nuevoEstado);
             }
         });
 
-        // Creamos el texto del título de la tarea
+        // Crea y configura el texto que muestra el nombre de la tarea
         const spanTitle = document.createElement('span');
         spanTitle.classList.add('task-title');
         spanTitle.textContent = tarea.title;
 
-        // Metemos el círculo y el título dentro de la sección de información
+        // Integra los elementos dentro del bloque de información principal
         divInfo.appendChild(divCheck);
         divInfo.appendChild(spanTitle);
 
-        // Creamos la etiqueta de prioridad/estado que sale a la derecha
+        // Crea la etiqueta estilizada (badge) que indica la prioridad o estado a la derecha
         const spanBadge = document.createElement('span');
         spanBadge.classList.add('task-priority');
 
-        // Configuramos el color y el nombre según el estado
+        // Estiliza el badge con colores semánticos (Verde, Amarillo, Rojo) según la fase de la tarea
         if (estadoReal === 'completed') {
             spanBadge.classList.add('priority-low');
             spanBadge.textContent = 'Hecho';
@@ -97,11 +90,11 @@ export const armarTareasUsuario = (elemento, listaTareas, onStatusChange) => {
             spanBadge.textContent = 'Pendiente';
         }
 
-        // Finalmente, armamos la tarjeta completa
+        // Une todas las piezas finales dentro de la estructura de la tarjeta
         divCard.appendChild(divInfo);
         divCard.appendChild(spanBadge);
 
-        // Y la metemos en el contenedor que nos dieron al principio
+        // Inyecta la tarjeta terminada en la lista visual que el usuario tiene en pantalla
         elemento.appendChild(divCard);
     }
 }

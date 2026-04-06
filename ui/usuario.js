@@ -1,54 +1,48 @@
 /**
  * Componente: usuario.js
- * Objetivo: Crear y mostrar la información del usuario en el DOM.
- * 
- * Este archivo exporta una función llamada `armarUsuario` que recibe dos parámetros:
- * 1. elemento: El contenedor HTML donde vamos a poner la información.
- * 2. usuario: El objeto con los datos del usuario que nos devuelve la API.
+ * Objetivo: Crear y mostrar la información del perfil del usuario en el DOM.
  */
 
 export const armarUsuario = (elemento, usuario) => {
-    // PASO 1: Limpiar el contenedor
+    // Elimina cualquier contenido previo dentro del contenedor para hacer un render limpio
     elemento.replaceChildren();
 
-    // PASO 2: Crear un Fragmento de Documento
+    // Crea un Fragmento de Documento para realizar una inserción única y optimizar el rendimiento (reflow)
     const fragmento = document.createDocumentFragment();
 
-    // PASO 3: Crear el contenedor principal de la tarjeta de usuario
+    // Crea el contenedor principal que agrupará toda la información del usuario
     const cajaInfoUsuario = document.createElement('div');
     cajaInfoUsuario.className = 'user-info-container';
 
-    // PASO 4: Crear y llenar los elementos individuales (párrafos) sin usar innerHTML
-
-    // --- Nombre ---
+    // Construye y añade el párrafo correspondiente al nombre completo del usuario
     const parrafoNombre = document.createElement('p');
     const strongNombre = document.createElement('strong');
     strongNombre.textContent = "Nombre: ";
     parrafoNombre.append(strongNombre, usuario.name);
     cajaInfoUsuario.append(parrafoNombre);
 
-    // --- Usuario (Username) ---
+    // Define e inyecta el nombre de usuario (username) en la tarjeta de información
     const parrafoUsuario = document.createElement('p');
     const strongUsuario = document.createElement('strong');
     strongUsuario.textContent = "Usuario: ";
     parrafoUsuario.append(strongUsuario, usuario.username);
     cajaInfoUsuario.append(parrafoUsuario);
 
-    // --- Email ---
+    // Prepara y visualiza el correo electrónico del usuario verificado
     const parrafoEmail = document.createElement('p');
     const strongEmail = document.createElement('strong');
     strongEmail.textContent = "Email: ";
     parrafoEmail.append(strongEmail, usuario.email);
     cajaInfoUsuario.append(parrafoEmail);
 
-    // --- ID ---
+    // Muestra el identificador único (ID) asignado al usuario por el sistema
     const parrafoId = document.createElement('p');
     const strongId = document.createElement('strong');
     strongId.textContent = "ID: ";
     parrafoId.append(strongId, usuario.id);
     cajaInfoUsuario.append(parrafoId);
 
-    // PASO 5: Ensamblaje final
+    // Ensambla el fragmento en la memoria y finalmente lo inyecta en el DOM real
     fragmento.append(cajaInfoUsuario);
     elemento.append(fragmento);
 }

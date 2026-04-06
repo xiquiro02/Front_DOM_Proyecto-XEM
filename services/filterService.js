@@ -1,65 +1,65 @@
 /**
  * Módulo: filterService.js
  * Objetivo: Gestionar el estado global de las tareas, el filtrado y el ordenamiento.
- *
- * Actúa como fuente de verdad centralizada para todas las tareas cargadas,
- * permitiendo filtrarlas por estado y/o usuario, y ordenarlas por fecha, nombre
- * o estado, de forma combinada y sin recargar la página.
  */
 
 // ==========================================
 // ESTADO INTERNO (privado al módulo)
 // ==========================================
-let todasLasTareas = [];        // Array con TODAS las tareas del usuario (sin filtrar)
-let filtroEstado = 'all';       // 'all' | 'pending' | 'in-progress' | 'completed'
-let filtroUsuario = 'all';      // 'all' | '1' | '2' | ...
+// Almacena la lista maestra de tareas sin ningún filtro aplicado
+let todasLasTareas = [];
+// Define el criterio actual de filtrado por estado ('all' por defecto)
+let filtroEstado = 'all';
+// Define el criterio actual de filtrado por usuario ('all' por defecto)
+let filtroUsuario = 'all';
 
-// ---- Ordenamiento ----
-let criterioOrden = 'fecha';    // 'fecha' | 'nombre' | 'estado'
-let direccionOrden = 'asc';     // 'asc' | 'desc'
+// Establece el campo por el cual se ordenarán los resultados (fecha, nombre, estado)
+let criterioOrden = 'fecha';
+// Define si el orden es ascendente ('asc') o descendente ('desc')
+let direccionOrden = 'asc';
 
 // ==========================================
 // GESTIÓN DE TAREAS
 // ==========================================
 
 /**
- * Reemplaza el array completo de tareas (se usa al cargar).
- * @param {Array} tareas - Lista de tareas traídas de la API.
+ * Reemplaza el listado completo de tareas en la memoria interna.
  */
 export const guardarTareas = (tareas) => {
+    // Actualiza la fuente de verdad con los nuevos datos recibidos
     todasLasTareas = tareas;
 };
 
 /**
- * Añade una tarea individual al array (se usa al crear).
- * @param {Object} tarea - Objeto de la nueva tarea.
+ * Agrega una nueva tarea al final del listado actual.
  */
 export const agregarTarea = (tarea) => {
+    // Inserta un objeto de tarea individual en el array maestro
     todasLasTareas.push(tarea);
 };
 
 /**
- * Actualiza una tarea existente en el array por su id.
- * @param {string|number} id - ID de la tarea a actualizar.
- * @param {Object} datos - Datos actualizados de la tarea.
+ * Busca y actualiza los datos de una tarea específica por su ID.
  */
 export const actualizarTareaEnEstado = (id, datos) => {
+    // Localiza el índice de la tarea comparando IDs como strings para evitar errores de tipo
     const index = todasLasTareas.findIndex(t => String(t.id) === String(id));
+    // Si la tarea existe, combina los datos actuales con los nuevos valores
     if (index !== -1) {
         todasLasTareas[index] = { ...todasLasTareas[index], ...datos };
     }
 };
 
 /**
- * Elimina una tarea del array por su id.
- * @param {string|number} id - ID de la tarea a eliminar.
+ * Remueve una tarea de la lista maestra basándose en su ID.
  */
 export const eliminarTareaDelEstado = (id) => {
+    // Filtra el array para excluir la tarea que coincide con el ID proporcionado
     todasLasTareas = todasLasTareas.filter(t => String(t.id) !== String(id));
 };
 
 /**
- * Retorna una copia del array completo sin filtrar.
+ * Proporciona una copia superficial de todas las tareas almacenadas.
  */
 export const obtenerTodasLasTareas = () => [...todasLasTareas];
 
@@ -68,35 +68,36 @@ export const obtenerTodasLasTareas = () => [...todasLasTareas];
 // ==========================================
 
 /**
- * Establece el filtro de estado.
- * @param {string} valor - 'all' | 'pending' | 'in-progress' | 'completed'
+ * Actualiza el filtro de estado activo en el sistema.
  */
 export const setFiltroEstado = (valor) => {
+    // Cambia el valor del filtro de estado ('all', 'pending', etc.)
     filtroEstado = valor;
 };
 
 /**
- * Establece el filtro de usuario.
- * @param {string} valor - 'all' | id del usuario como string
+ * Actualiza el filtro de usuario para discriminar tareas.
  */
 export const setFiltroUsuario = (valor) => {
+    // Establece el ID del usuario como criterio de filtrado
     filtroUsuario = valor;
 };
 
 /**
- * Retorna el valor actual del filtro de estado.
+ * Obtiene el valor actual del filtro por estado.
  */
 export const getFiltroEstado = () => filtroEstado;
 
 /**
- * Retorna el valor actual del filtro de usuario.
+ * Obtiene el valor actual del filtro por usuario.
  */
 export const getFiltroUsuario = () => filtroUsuario;
 
 /**
- * Resetea los filtros a su valor por defecto.
+ * Restablece ambos filtros a sus valores predeterminados ('all').
  */
 export const resetearFiltros = () => {
+    // Limpia los criterios de selección para mostrar todo de nuevo
     filtroEstado = 'all';
     filtroUsuario = 'all';
 };
@@ -105,46 +106,47 @@ export const resetearFiltros = () => {
 // GESTIÓN DE ORDENAMIENTO
 // ==========================================
 
-/** Establece el criterio de orden: 'fecha' | 'nombre' | 'estado' */
+/** Define la propiedad de la tarea sobre la cual aplicar el orden */
 export const setCriterioOrden = (valor) => { criterioOrden = valor; };
 
-/** Establece la dirección de orden: 'asc' | 'desc' */
+/** Define el sentido del ordenamiento (ascendente o descendente) */
 export const setDireccionOrden = (valor) => { direccionOrden = valor; };
 
-/** Retorna el criterio de orden activo */
+/** Recupera el criterio de ordenamiento que está siendo aplicado */
 export const getCriterioOrden = () => criterioOrden;
 
-/** Retorna la dirección de orden activa */
+/** Recupera el sentido del ordenamiento actual */
 export const getDireccionOrden = () => direccionOrden;
 
-/** Resetea el orden a los valores por defecto */
+/** Regresa el ordenamiento a su configuración inicial (Fecha/Asc) */
 export const resetearOrden = () => {
+    // Configura los valores iniciales para el sistema de ordenado
     criterioOrden = 'fecha';
     direccionOrden = 'asc';
 };
 
 // ==========================================
-// LÓGICA DE FILTRADO
+// LÓGICA DE FILTRADO Y ORDENAMIENTO
 // ==========================================
 
-// Mapa de prioridad de estado para ordenar por estado
+// Define un peso numérico para cada estado para permitir ordenamiento lógico
 const PRIORIDAD_ESTADO = { 'pending': 1, 'in-progress': 2, 'completed': 3 };
 
 /**
- * Retorna las tareas filtradas Y ordenadas según los criterios activos.
- * Primero filtra por estado y usuario, luego aplica el ordenamiento.
- * @returns {Array} - Array de tareas que cumplen el filtrado, ya ordenadas.
+ * Retorna un nuevo array procesado con los filtros y el orden aplicados.
  */
 export const obtenerTareasFiltradas = () => {
-    // --- 1. FILTRADO ---
+    // --- PROCESO DE FILTRADO ---
     const filtradas = todasLasTareas.filter(tarea => {
         let pasaEstado = true;
+        // Evalúa si la tarea cumple con el estado seleccionado en el filtro
         if (filtroEstado !== 'all') {
             const estadoTarea = tarea.status || (tarea.completed ? 'completed' : 'pending');
             pasaEstado = estadoTarea === filtroEstado;
         }
 
         let pasaUsuario = true;
+        // Verifica si algun usuario asociado a la tarea coincide con el filtro de usuario
         if (filtroUsuario !== 'all') {
             pasaUsuario = Array.isArray(tarea.usuarios)
                 && tarea.usuarios.some(u => String(u.id) === String(filtroUsuario));
@@ -153,23 +155,24 @@ export const obtenerTareasFiltradas = () => {
         return pasaEstado && pasaUsuario;
     });
 
-    // --- 2. ORDENAMIENTO ---
+    // --- PROCESO DE ORDENAMIENTO ---
+    // Multiplicador de dirección: 1 para ascendente, -1 para descendente
     const dir = direccionOrden === 'asc' ? 1 : -1;
 
     return [...filtradas].sort((a, b) => {
+        // Ordenamiento alfabético insensible a mayúsculas por el título de la tarea
         if (criterioOrden === 'nombre') {
-            // Orden alfabético por título
             return dir * a.title.localeCompare(b.title, 'es', { sensitivity: 'base' });
         }
 
+        // Ordenamiento por importancia de estado según el mapa de PRIORIDAD_ESTADO
         if (criterioOrden === 'estado') {
-            // Orden por prioridad de estado: pendiente → en proceso → completada
             const pa = PRIORIDAD_ESTADO[a.status || (a.completed ? 'completed' : 'pending')] || 1;
             const pb = PRIORIDAD_ESTADO[b.status || (b.completed ? 'completed' : 'pending')] || 1;
             return dir * (pa - pb);
         }
 
-        // Por defecto: orden por fecha (usando createdAt si existe, o id como proxy)
+        // Ordenamiento temporal: usa el timestamp de creación o el ID como respaldo
         const fa = a.createdAt || a.id;
         const fb = b.createdAt || b.id;
         return dir * (fa - fb);

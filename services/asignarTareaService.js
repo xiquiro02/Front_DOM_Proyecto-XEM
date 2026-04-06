@@ -1,35 +1,33 @@
 /**
  * Servicio: asignarTareaService.js
- * Objetivo: Asignar la misma tarea a múltiples usuarios en paralelo.
- * Reutiliza la API de createTarea sin depender directamente de ella.
  */
+// Importa la función de API necesaria para crear tareas individuales
 import { createTarea } from '../api/index.js';
+// Importa los componentes de UI para emitir notificaciones visuales sobre el proceso
 import { notificarExito, notificarError, notificarInfo } from '../ui/index.js';
 
 /**
- * Asigna la misma tarea (mismos datos) a una lista de usuarios.
- * Realiza las peticiones en paralelo con Promise.allSettled para que
- * un fallo individual no cancele las demás asignaciones.
- *
- * @param {Object} datosTarea  - Campos comunes: title, body, completed, status.
- * @param {number[]} idsUsuarios - IDs de los usuarios que recibirán la tarea.
- * @returns {Promise<{exitosos: number, fallidos: number}>}
+ * Asigna una misma tarea a una colección de usuarios mediante peticiones asíncronas.
  */
 export const asignarTareaAVariosUsuarios = async (datosTarea, idsUsuarios) => {
+    // Valida preventivamente si la lista de destinatarios no está vacía
     if (!idsUsuarios || idsUsuarios.length === 0) {
         notificarInfo('Debes seleccionar al menos un usuario.');
         return { exitosos: 0, fallidos: 0 };
     }
 
     try {
+        // Ejecuta la creación de una tarea pasando el array de IDs de usuarios asociados
         await createTarea({
-            ...datosTarea,
-            userIds: idsUsuarios,
-            createdAt: Date.now(),
+            ...datosTarea, // Propaga los datos comunes de la tarea (título, descripción, etc)
+            userIds: idsUsuarios, // Incluye la nómina de usuarios seleccionados
+            createdAt: Date.now(), // Estampa la fecha actual como marca de tiempo para el registro
         });
+        // Informa al usuario de la asignación exitosa indicando la cantidad procesada
         notificarExito(`Tarea asignada correctamente a ${idsUsuarios.length} usuario${idsUsuarios.length !== 1 ? 's' : ''}.`);
         return { exitosos: idsUsuarios.length, fallidos: 0 };
     } catch (error) {
+        // Gestiona el fallo en la asignación reportando el error a la interfaz
         notificarError('No se pudo asignar la tarea.');
         return { exitosos: 0, fallidos: idsUsuarios.length };
     }

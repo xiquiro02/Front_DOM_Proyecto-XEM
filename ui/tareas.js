@@ -1,38 +1,36 @@
 /**
  * Componente: tareas.js
- * Objetivo: Crear y mostrar la lista de tareas del usuario.
- * 
- * Exporta una función llamada `armarTareas` que recibe:
- * 1. elemento: El contenedor donde se mostrarán.
- * 2. listaTareas: Un array [] con las tareas que traemos de la API.
+ * Objetivo: Crear y mostrar la lista dinámica de tareas en el DOM.
  */
 
 export const armarTareas = (elemento, listaTareas) => {
+    // Crea un fragmento de documento para acumular las tarjetas antes de insertarlas en el DOM
     const fragmento = document.createDocumentFragment();
 
+    // Recorre cada tarea del array proporcionado para construir su representación visual
     listaTareas.forEach(tarea => {
-        // Determinar el estado real de la tarea
-        // Prioridad: campo propio 'status' (para tareas "en proceso"), si no: derivado de 'completed'
+        // Determina el estado de la tarea priorizando el campo 'status' personalizado
         const estadoReal = tarea.status || (tarea.completed ? 'completed' : 'pending');
 
-        // PASO 1: Crear el contenedor de la tarjeta de la tarea
+        // Crea el contenedor con clases de estilo y atributos de datos para filtrado dinámico
         const divTarea = document.createElement('div');
         divTarea.className = 'message-card';
-        divTarea.setAttribute('data-status', estadoReal);           // para filtros por estado
-        divTarea.setAttribute('data-user-id', tarea.usuarios?.[0]?.id ?? ''); // para filtros por usuario
+        divTarea.setAttribute('data-status', estadoReal);
+        divTarea.setAttribute('data-user-id', tarea.usuarios?.[0]?.id ?? '');
 
-        // PASO 2: Crear la cabecera (Título y Estado)
+        // Prepara la cabecera de la tarjeta con el título y el indicador de estado
         const divCabecera = document.createElement('div');
         divCabecera.className = 'message-header';
 
-        // Título de la tarea
+        // Crea e inserta el título principal de la tarea
         const titulo = document.createElement('h3');
         titulo.textContent = tarea.title;
         titulo.className = 'message-author';
 
-        // Estado (Completada | En proceso | Pendiente)
+        // Crea el elemento <span> que representará visualmente el estado actual
         const spanEstado = document.createElement('span');
 
+        // Aplica clases, iconos y colores específicos según el estado de la tarea
         if (estadoReal === 'completed') {
             spanEstado.className = 'status-completed';
             spanEstado.textContent = '✅ Completada';
@@ -46,45 +44,51 @@ export const armarTareas = (elemento, listaTareas) => {
             spanEstado.style.color = 'orange';
         }
 
+        // Estiliza el indicador de estado para mayor legibilidad
         spanEstado.style.fontWeight = 'bold';
         spanEstado.style.marginLeft = '10px';
 
+        // Ensambla los componentes en la cabecera
         divCabecera.append(titulo);
         divCabecera.append(spanEstado);
 
-        // PASO 3: Parte principal de la tarea (Descripción)
+        // Crea el componente para la descripción o cuerpo de la tarea
         const parrafoDescripcion = document.createElement('p');
         parrafoDescripcion.className = 'message-text';
 
-        //PASO 4: Contenedor de acciones
+        // Crea un contenedor dedicado para los botones de acción lateral
         const divAcciones = document.createElement('div');
         divAcciones.className = 'tarea__acciones';
 
-        // PASO 5: Botones de editar y eliminar
+        // Define el botón de Edición con su respectivo ID de referencia
         const btnEditar = document.createElement('button');
         btnEditar.classList.add('btn', 'btn-editar-tarea');
         btnEditar.setAttribute('data-id', tarea.id);
         btnEditar.textContent = 'Editar';
 
+        // Define el botón de Eliminación con su respectivo ID de referencia
         const btnEliminar = document.createElement('button');
         btnEliminar.classList.add('btn', 'btn-eliminar-tarea');
         btnEliminar.setAttribute('data-id', tarea.id);
         btnEliminar.textContent = 'Eliminar';
 
+        // Asigna el contenido al cuerpo de la tarea o un mensaje por defecto si está vacío
         if (tarea.body) {
             parrafoDescripcion.textContent = tarea.body;
         } else {
             parrafoDescripcion.textContent = 'Sin descripción disponible';
         }
 
-        // PASO 4: Armar la tarjeta completa
+        // Ensambla y jerarquiza todos los elementos dentro de la tarjeta principal
         divTarea.append(divCabecera);
         divTarea.append(parrafoDescripcion);
         divAcciones.append(btnEditar, btnEliminar);
         divTarea.append(divAcciones);
 
+        // Añade la tarjeta finalizada al fragmento acumulador
         fragmento.append(divTarea);
     });
 
+    // Realiza la inserción masiva en el DOM real para finalizar el renderizado
     elemento.append(fragmento);
 }

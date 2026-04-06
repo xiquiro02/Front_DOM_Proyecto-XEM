@@ -1,13 +1,16 @@
+// Importa la URL base desde la configuración
 import { BASE_URL } from '../config.js';
 
+// Exporta la función para actualizar una tarea existente por su ID
 export const updateTarea = async (tareaId, tarea) => {
+    // Diccionario para traducir estados del front (Inglés) al back (Español)
     const frontToBack = {
         'pending': 'pendiente',
         'in-progress': 'en proceso',
         'completed': 'completada'
     };
 
-    // Mapeamos los campos del frente (Inglés) a los del backend (Español)
+    // Prepara el cuerpo de la petición mapeando campos al formato del backend
     const bodyBackend = {
         titulo: tarea.title,
         descripcion: tarea.body,
@@ -15,24 +18,26 @@ export const updateTarea = async (tareaId, tarea) => {
     };
 
     try {
+        // Ejecuta una petición PUT con el cuerpo JSON y las cabeceras adecuadas
         const respuesta = await fetch(`${BASE_URL}/tareas/${tareaId}`, {
-            method: 'PUT', // Usamos PUT ya que el backend original lo requiere
+            method: 'PUT', // Método requerido por el backend para actualizaciones
             body: JSON.stringify(bodyBackend),
             headers: {
                 'Content-type': 'application/json; charset=UTF-8',
             },
         });
 
+        // Verifica si la actualización fue exitosa
         if (respuesta.ok) {
             const json = await respuesta.json();
             const t = json.data;
-            // Mapeamos de vuelta para que el frontend siga funcionando igual
+            // Diccionario para traducir de vuelta del back (Español) al front (Ingés)
             const backToFront = {
                 'completada': 'completed',
                 'pendiente': 'pending',
                 'en proceso': 'in-progress'
             };
-            // Mapeo de vuelta para el front
+            // Retorna los datos actualizados adaptados para el frontend
             return {
                 ...t,
                 title: t.titulo,
@@ -41,9 +46,11 @@ export const updateTarea = async (tareaId, tarea) => {
                 completed: t.estado === 'completada'
             };
         } else {
+            // Lanza error si el servidor no pudo procesar la actualización
             throw new Error('Error al actualizar la tarea');
         }
     } catch (error) {
+        // Registra y propaga cualquier error de red o de proceso
         console.error("Error en la petición de actualización:", error);
         throw error;
     }
